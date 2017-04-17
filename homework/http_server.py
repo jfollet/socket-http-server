@@ -97,10 +97,10 @@ def resolve_uri(uri):
         if mime_type is None:
             if os.path.splitext(filename)[1] is ".py":
                 mime_type = "text/x-python"
-        mime_type = mime_type.encode()
         f = open(uri_file, "rb")
         content = f.read()
         f.close()
+    mime_type = mime_type.encode()
     return content, mime_type
 
 
