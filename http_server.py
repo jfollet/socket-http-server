@@ -14,18 +14,23 @@ def server(log_buffer=sys.stderr):
         while True:
             print('waiting for a connection', file=log_buffer)
             conn, addr = sock.accept()  # blocking
+            request = ""
             try:
                 print('connection - {0}:{1}'.format(*addr), file=log_buffer)
                 while True:
-                    data = conn.recv(16)
+                    data = conn.recv(4096)
+                    request += data.decode()
                     print('received "{0}"'.format(data), file=log_buffer)
-                    if data:
-                        print('sending data back to client', file=log_buffer)
-                        conn.sendall(data)
-                    else:
-                        msg = 'no more data from {0}:{1}'.format(*addr)
-                        print(msg, log_buffer)
+                    if len(data) < 4096:
                         break
+                    parse_request(request)
+                    print('sending data back to client', file=log_buffer)
+                    response = response_ok()
+                    conn.sendall(response)
+                    # else:
+                    #     msg = 'no more data from {0}:{1}'.format(*addr)
+                    #     print(msg, log_buffer)
+                    #     break
             finally:
                 conn.close()
 
@@ -34,19 +39,31 @@ def server(log_buffer=sys.stderr):
         return
 
 
-if __name__ == '__main__':
-    server()
-    sys.exit(0)
-
-
 def response_ok():
     """returns a basic HTTP response"""
-    pass
+    response = b"\r\n".join(
+        [
+            b"HTTP/1.1 200 OK",
+            b"Content-Type: text/plain",
+            b"",
+            b"this is normal response",
+        ]
+    )
+    return response
 
 
 def parse_request(request):
-    pass
+    first_line = request.split("\r\n")[0]
+    method, uri, protocol = first_line.split()
+    if method != "GET":
+        raise NotImplementedError("we only accept GET")
+    print('request is okay', file=sys.stderr)
 
 
 def response_method_not_allowed():
     pass
+
+
+if __name__ == '__main__':
+    server()
+    sys.exit(0)
