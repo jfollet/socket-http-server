@@ -23,8 +23,6 @@ def response_ok(body=b"this is a pretty minimal response", mimetype=b"text/plain
 
     """
 
-    # TODO: Update response_ok so that it uses the provided body
-    # and mimetype.  Done
     resp = []
     resp.append(b"HTTP/1.1 200 OK")
     resp.append(b"Content-Type: " + mimetype)
@@ -44,17 +42,10 @@ def response_method_not_allowed():
 def response_not_found():
     """returns a 404 Not Found response"""
 
-    # TODO: Consruct and return a 404 response.  Done
-    #
-    # See response_method_not_allowed for an example of
-    # another type of 4xx response. You will need to use
-    # the correct number (by changing "405") and also the
-    # correct statement (by changing "Method Not Allowed").
     resp = []
     resp.append("HTTP/1.1 404 Not Found")
     resp.append("")
     return "\r\n".join(resp).encode('utf8')
-    # return b""
 
 
 def parse_request(request):
@@ -93,24 +84,19 @@ def resolve_uri(uri):
 
     """
 
-    # TODO: Raise a NameError if the requested content is not present
-    # under webroot.
     uri_file = os.path.join(os.path.dirname(__file__), "webroot", uri[1:])
     if not os.path.exists(uri_file):
         raise NameError
 
-    # TODO: Fill in the appropriate content and mime_type give the URI.
-    # See the assignment guidelines for help on "mapping mime-types", though
-    # you might need to create a special case for handling make_time.py
+    mime_type = "text/plain"
     if os.path.isdir(uri_file):
         content = ", ".join(os.listdir(uri_file)).encode()
-        mime_type = b"text/plain"
     else:
         pathname, filename = os.path.split(uri_file)
         mime_type, _ = mimetypes.guess_type(filename)
-        # if mime_type is None:
-        #     if os.path.splitext(filename)[1] is ".py":
-        #         mime_type = "text/x-python"
+        if mime_type is None:
+            if os.path.splitext(filename)[1] is ".py":
+                mime_type = "text/x-python"
         mime_type = mime_type.encode()
         f = open(uri_file, "rb")
         content = f.read()
