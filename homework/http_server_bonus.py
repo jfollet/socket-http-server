@@ -1,7 +1,11 @@
+import datetime
+import email.utils
 import mimetypes
 import os
 import socket
 import sys
+
+import time
 
 
 def response_ok(body=b"this is a pretty minimal response", mimetype=b"text/plain"):
@@ -26,6 +30,9 @@ def response_ok(body=b"this is a pretty minimal response", mimetype=b"text/plain
     resp = []
     resp.append(b"HTTP/1.1 200 OK")
     resp.append(b"Content-Type: " + mimetype)
+    time_now = time.mktime(datetime.datetime.now().timetuple())
+    resp.append(b"Date: " + email.utils.formatdate(time_now, False, True).encode())
+    resp.append(b"Content-Length: " + str(len(body)).encode())
     resp.append(b"")
     resp.append(body)
     return b"\r\n".join(resp)
@@ -62,7 +69,7 @@ def list_dir_in_html(uri, uri_file):
     content += "<body>\r\n"
     content += "<ul>\r\n"
     content += "".join(
-        "<li><a href=\"{}{}\">{}</a></li>\r\n".format(uri, file, file) for file in (os.listdir(uri_file)))
+        "<li><a href=\"{}/{}\">{}</a></li>\r\n".format(uri[1:], file, file) for file in (os.listdir(uri_file)))
     content += "</ul>\r\n"
     content += "</body>\r\n"
     content += "</html>\r\n"
